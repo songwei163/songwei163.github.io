@@ -6,9 +6,19 @@
     <description>Recent content in Categories on 会飞的鱼</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
+    <lastBuildDate>Wed, 19 Aug 2020 20:53:57 +0800</lastBuildDate>
     
 	<atom:link href="https://songwei163.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>随笔</title>
+      <link>https://songwei163.github.io/categories/%E9%9A%8F%E7%AC%94/</link>
+      <pubDate>Wed, 19 Aug 2020 20:53:57 +0800</pubDate>
+      
+      <guid>https://songwei163.github.io/categories/%E9%9A%8F%E7%AC%94/</guid>
+      <description></description>
+    </item>
     
   </channel>
 </rss>
