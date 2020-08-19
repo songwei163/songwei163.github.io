@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>线程管理（三） - 会飞的鱼</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Song wei" /><meta name="description" content="" /><meta name="keywords" content="Hugo, theme, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.3 with theme even" />
+
+
+<link rel="canonical" href="https://songwei163.github.io/post/%E7%BA%BF%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%89/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.651e6917abb0239242daa570c2bec9867267bbcd83646da5a850afe573347b44.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="线程管理（三）" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://songwei163.github.io/post/%E7%BA%BF%E7%A8%8B%E7%AE%A1%E7%90%86%E4%B8%89/" />
+<meta property="article:published_time" content="2020-08-19T21:27:53+08:00" />
+<meta property="article:modified_time" content="2020-08-19T21:27:53+08:00" />
+<meta itemprop="name" content="线程管理（三）">
+<meta itemprop="description" content="">
+<meta itemprop="datePublished" content="2020-08-19T21:27:53+08:00" />
+<meta itemprop="dateModified" content="2020-08-19T21:27:53+08:00" />
+<meta itemprop="wordCount" content="1633">
+
+
+
+<meta itemprop="keywords" content="线程," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="线程管理（三）"/>
+<meta name="twitter:description" content=""/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">清心之处</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">清心之处</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">线程管理（三）</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-08-19 </span>
+        <div class="post-category">
+            <a href="/categories/c&#43;&#43;/"> C&#43;&#43; </a>
+            </div>
+          <span class="more-meta"> 约 1633 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+    <div class="post-content">
+      <h4 id="线程id线程属性线程撤销">线程ID、线程属性、线程撤销</h4>
+<h5 id="线程id">线程ID</h5>
+<p><code>pthread_equal()</code>函数：确认两个线程是否相同</p>
+<ul>
+<li>原型</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_equal</span><span class="p">(</span><span class="n">pthread_t</span> <span class="n">t1</span><span class="p">,</span> <span class="n">pthread_t</span> <span class="n">t2</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><code>pthread_self()</code>函数：返回当前线程ID</p>
+<ul>
+<li>原型：</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="n">pthread_t</span> <span class="nf">pthread_self</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>示例</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp">  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">pthread_equal</span> <span class="p">(</span><span class="n">pthread_self</span> <span class="p">(),</span> <span class="n">other_tid</span><span class="p">))</span>
+    <span class="p">{</span>
+      <span class="n">pthread_join</span> <span class="p">(</span><span class="n">other_tid</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">);</span>
+    <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="线程属性">线程属性</h5>
+<p>精细调整线程的行为</p>
+<p>设置线程属性的流程</p>
+<ul>
+<li>
+<p>创建<code>pthread_attr_t</code>类型的对象</p>
+</li>
+<li>
+<p>调用<code>pthread_attr_init()</code>函数初始化线程缺省属性，传递指向该线程属性对象的指针</p>
+<p>原型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_attr_init</span><span class="p">(</span><span class="n">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>对线程属性进行必要修改</p>
+</li>
+<li>
+<p>调用<code>pthread_crerate()</code>函数时传递指向线程属性对象的指针</p>
+</li>
+<li>
+<p>调用<code>pthread_attr_destroy()</code>函数清除线程属性对象，<code>pthread_attr_t</code>对象本身并没有被销毁，因而可以调用<code>pthread_attr_init()</code>函数再次初始化</p>
+<p>​	原型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_attr_destroy</span><span class="p">(</span><span class="n">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p>线程属性说明</p>
+<ul>
+<li>单一线程属性对象可以用于创建多个线程</li>
+<li>线程创建后，继续保留线程属性对象本身并没有意义</li>
+<li>对于大多数Linux程序，线程最重要的属性为分离状态（<code>detach state</code>）</li>
+</ul>
+<p>线程分类</p>
+<ul>
+<li>
+<p>可联线程（<code>joinable thread</code>）:	缺省设置，终止时并不自动清除（类似僵尸进程），主线程必须调用<code>pthread_join()</code>获取其返回值，此后才能清除</p>
+</li>
+<li>
+<p>分离线程（<code>detached thread</code>）：结束时自动清除，不能调用<code>pthread_join()</code>进行线程同步</p>
+</li>
+<li>
+<p>可联线程可通过<code>pthread_detach()</code>函数分离，分离线程不能再次联结</p>
+<p>​	原型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_detach</span><span class="p">(</span><span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p><code>pthread_attr_setdeatchstate()</code>函数：设置线程分离属性</p>
+<ul>
+<li>
+<p>原型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_attr_setdetachstate</span><span class="p">(</span><span class="n">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">detachstate</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>传递线程属性对象指针和分离线程设置参数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="n">PTHREAD_CREATE_DETACHED</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p><code>pthread_attr_getdetachstate()</code>函数：获取线程分离属性</p>
+<ul>
+<li>
+<p>原型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_attr_getdetachstate</span><span class="p">(</span><span class="k">const</span> <span class="n">pthread_attr_t</span> <span class="o">*</span><span class="n">attr</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">detachstate</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp">
+</span><span class="cp"></span>
+<span class="kt">void</span> <span class="o">*</span><span class="nf">ThreadFunc</span> <span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+<span class="p">{</span> <span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+  <span class="n">pthread_attr_t</span> <span class="n">attr</span><span class="p">;</span>
+  <span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">;</span>
+
+  <span class="c1">//初始化线程属性
+</span><span class="c1"></span>  <span class="n">pthread_attr_init</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+
+  <span class="c1">//设置线程属性的分离状态
+</span><span class="c1"></span>  <span class="n">pthread_attr_setdetachstate</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_CREATE_DETACHED</span><span class="p">);</span>
+
+  <span class="c1">//创建线程
+</span><span class="c1"></span>  <span class="n">pthread_create</span> <span class="p">(</span><span class="o">&amp;</span><span class="kr">thread</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ThreadFunc</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">);</span>
+
+  <span class="c1">//清除线程属性对象
+</span><span class="c1"></span>  <span class="n">pthread_attr_destroy</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+  <span class="c1">//无需联结该线程
+</span><span class="c1"></span>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="线程撤销">线程撤销</h5>
+<p><code>pthread_cancel()</code>函数：撤销线程</p>
+<ul>
+<li>
+<p>原型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_cancel</span><span class="p">(</span><span class="n">pthread_t</span> <span class="kr">thread</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>已撤销的线程可以来联结，且必须联结欸，以释放其资源，除非其为分离线程</p>
+</li>
+</ul>
+<p>线程撤销类型与状态</p>
+<ul>
+<li>异步可撤销：在其执行的任何时刻都可撤销</li>
+<li>同步可撤销：线程可撤销，但撤销操作首先进入队列排队，在线程执行到特定撤销点时才可撤销</li>
+<li>不可撤销：撤销不可撤销线程的企图被系统忽略，且没有任何消息反馈</li>
+</ul>
+<p><code>pthread_setcanceltype()</code>函数：设置线程的撤销类型</p>
+<ul>
+<li>
+<p>原型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"> <span class="kt">int</span> <span class="nf">pthread_setcanceltype</span><span class="p">(</span><span class="kt">int</span> <span class="n">type</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">oldtype</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>参数：</p>
+<p><code>type</code>为撤销类型，<code>oldtype</code>用于保存原始线程撤销类型，<code>NULL</code>表示不保存</p>
+</li>
+<li>
+<p><code>PTHREAD_CANCEL_ASYNCHRONOUS</code>：线程异步可撤销</p>
+</li>
+<li>
+<p><code>PTHREAD_CANCEL_DEFERRED</code>：线程同步可撤销，即延迟到下一撤销点时撤销</p>
+</li>
+</ul>
+<p><code>pthread_setcanceltype()</code>函数：设置线程的撤销状态</p>
+<ul>
+<li>
+<p>原型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">int</span> <span class="nf">pthread_setcanceltype</span><span class="p">(</span><span class="kt">int</span> <span class="n">type</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">oldtype</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>第一个参数<code>state</code>为可撤销状态，第二个参数<code>oldstate</code>用于保存原始线程的可撤销状态,<code>NULL</code>表示不保存</p>
+</li>
+<li>
+<p><code>PTHREAD_CANCEL_ENABLE</code>：线程可撤销</p>
+</li>
+<li>
+<p><code>PTHREAD_CANCEL_DISABLE</code>：线程不可撤销</p>
+</li>
+<li>
+<p>线程的撤销状态可多次设置</p>
+</li>
+</ul>
+<p><code>pthread_testcancel()</code>函数：设置撤销点</p>
+<ul>
+<li>
+<p>原型</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"> <span class="kt">void</span> <span class="nf">pthread_testcancel</span><span class="p">(</span><span class="kt">void</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>在线程函数中调用<code>pthread_testcancel()</code>函数设置撤销点</p>
+</li>
+<li>
+<p>建议：周期性地设置撤销点，保证线程函数内部每隔一些代码就有一个撤销点，以保证资源能够正确释放</p>
+</li>
+</ul>
+<p>使用撤销状态构造临界区（critical section）</p>
+<ul>
+<li>临界区：要么全部执行，要么一条都不会执行的代码段</li>
+<li>设置线程的撤销状态，线程一旦进入临界区，就必须等到离开临界区，才可以被撤销</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-cpp" data-lang="cpp"><span class="kt">void</span> <span class="nf">Transfer</span> <span class="p">(</span><span class="kt">double</span> <span class="o">*</span><span class="n">accounts</span><span class="p">,</span> <span class="kt">int</span> <span class="n">from</span><span class="p">,</span> <span class="kt">int</span> <span class="n">to</span><span class="p">,</span> <span class="kt">double</span> <span class="n">amount</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">ocs</span><span class="p">;</span>
+  <span class="c1">//数据有效性检查代码在此，确保转账操作合法有效
+</span><span class="c1"></span>
+  <span class="c1">//将线程设置为不可撤销的，进入临界区
+</span><span class="c1"></span>  <span class="n">pthread_setcancelstate</span> <span class="p">(</span><span class="n">PTHREAD_CANCEL_DISABLE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ocs</span><span class="p">);</span>
+
+  <span class="n">accounts</span><span class="p">[</span><span class="n">to</span><span class="p">]</span> <span class="o">+=</span> <span class="n">amount</span><span class="p">;</span>
+  <span class="n">accounts</span><span class="p">[</span><span class="n">from</span><span class="p">]</span> <span class="o">-=</span> <span class="n">accounts</span><span class="p">;</span>
+
+  <span class="c1">//恢复线程的撤销状态，离开临界区
+</span><span class="c1"></span>  <span class="n">pthread_setcancelstate</span> <span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div>
+    </div>
+
+    
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E7%BA%BF%E7%A8%8B/">线程</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E7%BA%BF%E7%A8%8B%E7%AE%A1%E7%90%86%E5%9B%9B/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">线程管理（四）</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E7%BA%BF%E7%A8%8B%E7%AE%A1%E7%90%86%E4%BA%8C/">
+            <span class="next-text nav-default">线程管理（二）</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:songweicpp@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/songwei163" class="iconfont icon-github" title="github"></a>
+  <a href="https://songwei163.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2020
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Song Wei</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.d7b7ada643c9c1a983026e177f141f7363b4640d619caf01d8831a6718cd44ea.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

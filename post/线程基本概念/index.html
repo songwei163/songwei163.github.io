@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>分类 - 会飞的鱼</title>
+  <title>线程基本概念 - 会飞的鱼</title>
   <meta name="renderer" content="webkit" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
 
-<meta name="author" content="Song Wei" /><meta name="description" content="Hugo theme even example site." /><meta name="keywords" content="Hugo, theme, even" />
+<meta name="author" content="Song wei" /><meta name="description" content="" /><meta name="keywords" content="Hugo, theme, even" />
 
 
 
@@ -26,9 +26,7 @@
 <meta name="generator" content="Hugo 0.74.3 with theme even" />
 
 
-<link rel="canonical" href="https://songwei163.github.io/categories/" />
-  <link href="https://songwei163.github.io/categories/index.xml" rel="alternate" type="application/rss+xml" title="会飞的鱼" />
-  <link href="https://songwei163.github.io/categories/index.xml" rel="feed" type="application/rss+xml" title="会飞的鱼" />
+<link rel="canonical" href="https://songwei163.github.io/post/%E7%BA%BF%E7%A8%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -41,16 +39,24 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
 
 
-<meta property="og:title" content="Categories" />
-<meta property="og:description" content="Hugo theme even example site." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://songwei163.github.io/categories/" />
-<meta property="og:updated_time" content="2020-08-19T21:31:19+08:00" />
-<meta itemprop="name" content="Categories">
-<meta itemprop="description" content="Hugo theme even example site.">
+<meta property="og:title" content="线程基本概念" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://songwei163.github.io/post/%E7%BA%BF%E7%A8%8B%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" />
+<meta property="article:published_time" content="2020-08-19T21:24:19+08:00" />
+<meta property="article:modified_time" content="2020-08-19T21:24:19+08:00" />
+<meta itemprop="name" content="线程基本概念">
+<meta itemprop="description" content="">
+<meta itemprop="datePublished" content="2020-08-19T21:24:19+08:00" />
+<meta itemprop="dateModified" content="2020-08-19T21:24:19+08:00" />
+<meta itemprop="wordCount" content="565">
+
+
+
+<meta itemprop="keywords" content="线程," />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Categories"/>
-<meta name="twitter:description" content="Hugo theme even example site."/>
+<meta name="twitter:title" content="线程基本概念"/>
+<meta name="twitter:description" content=""/>
 
 <!--[if lte IE 9]>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
@@ -110,21 +116,84 @@
     <main id="main" class="main">
       <div class="content-wrapper">
         <div id="content" class="content">
-          <div class="terms">
-      <div class="terms-title">
-        共计 2 个分类
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">线程基本概念</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-08-19 </span>
+        <div class="post-category">
+            <a href="/categories/c&#43;&#43;/"> C&#43;&#43; </a>
+            </div>
+          <span class="more-meta"> 约 565 字 </span>
+          <span class="more-meta"> 预计阅读 2 分钟 </span>
+        
       </div>
-      <div class="terms-tags">
-        <a class="terms-link" href="/categories/c&#43;&#43;/">
-            c&#43;&#43;
-            <span class="terms-count">7</span>
-          </a>
-        <a class="terms-link" href="/categories/%E9%9A%8F%E7%AC%94/">
-            随笔
-            <span class="terms-count">1</span>
-          </a>
-        </div>
+    </header>
+
+    
+    <div class="post-content">
+      <h4 id="线程基本概念">线程基本概念</h4>
+<h5 id="线程的定义">线程的定义</h5>
+<ul>
+<li>线程是比进程更小的程序执行单位</li>
+<li>多个线程可以共享全局数据，也可以使用专有数据</li>
+</ul>
+<h5 id="linux线程支持史">Linux线程支持史</h5>
+<ul>
+<li>1996年，LinuxThreads：基本符合POSIX标准，但效率低下，问题多多</li>
+<li>2003年，内核2.6：提供线程支持库NPTL（Native POSIX Thread Library for Linux）</li>
+</ul>
+<h5 id="内核线程">内核线程</h5>
+<ul>
+<li>操作系统内核支持多线程调度与执行</li>
+<li>内核线程使用资源较少，仅包括内核栈和上下文切换时需要的保存寄存器内容的空间</li>
+</ul>
+<h5 id="轻量级线程lightweight-processlwp">轻量级线程（lightweight process，LWP）</h5>
+<ul>
+<li>由内核支持的独立调度单元，调度开销小于普通的进程</li>
+<li>系统支持多个轻量级进程同时运行，每个都与特定的内核线程相关联</li>
+</ul>
+<h5 id="用户线程">用户线程</h5>
+<ul>
+<li>建立在用户空间的多个用户级线程，映射到轻量级进程侯调度执行</li>
+<li>用户线程在用户空间创建、同步和销毁，开销较低</li>
+<li>每个线程具有独特的ID</li>
+</ul>
+<h5 id="使用说明">使用说明</h5>
+<ul>
+<li>线程功能不属于C/C++标准库，链接时需用<code>-pthread</code>选项</li>
+<li>线程功能属于C++11标准库 ，可用C++11提供的<code>thread</code>类定义线程对象，C++11标准库同时提供基本的线程同步机制</li>
+</ul>
+<h5 id="进程与线程的比较">进程与线程的比较</h5>
+<ul>
+<li>线程空间不独立，有问题的线程会影响其他线程；进程空间独立，有问题的进程一般不会影响其他进程</li>
+<li>创建进程需要额外的性能开销</li>
+<li>线程用于开发细颗粒度并行性，就能成用于开发粗颗粒度并行性</li>
+<li>线程容易共享数据，进程共享数据必须使用进程间通信机制（IPC ）</li>
+</ul>
     </div>
+
+    
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/%E7%BA%BF%E7%A8%8B/">线程</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%E4%B8%80/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">线程同步机制（一）</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%81%8A%E8%81%8A/">
+            <span class="next-text nav-default">第一次聊聊</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
         </div>
         
 
