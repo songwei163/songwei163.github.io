@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://songwei163.github.io/sitemap.xml
