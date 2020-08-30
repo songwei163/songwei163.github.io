@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>FTP关键技术（三）：nobody进程的创建和使用（二） - 会飞的鱼</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Song wei" /><meta name="description" content="" /><meta name="keywords" content="Hugo, theme, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.3 with theme even" />
+
+
+<link rel="canonical" href="https://songwei163.github.io/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E4%B8%89nobody%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E4%BA%8C/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.651e6917abb0239242daa570c2bec9867267bbcd83646da5a850afe573347b44.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="FTP关键技术（三）：nobody进程的创建和使用（二）" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://songwei163.github.io/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E4%B8%89nobody%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E4%BA%8C/" />
+<meta property="article:published_time" content="2020-08-30T14:32:38+08:00" />
+<meta property="article:modified_time" content="2020-08-30T14:32:38+08:00" />
+<meta itemprop="name" content="FTP关键技术（三）：nobody进程的创建和使用（二）">
+<meta itemprop="description" content="">
+<meta itemprop="datePublished" content="2020-08-30T14:32:38+08:00" />
+<meta itemprop="dateModified" content="2020-08-30T14:32:38+08:00" />
+<meta itemprop="wordCount" content="1552">
+
+
+
+<meta itemprop="keywords" content="FTP关键技术," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="FTP关键技术（三）：nobody进程的创建和使用（二）"/>
+<meta name="twitter:description" content=""/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">清心之处</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">清心之处</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">FTP关键技术（三）：nobody进程的创建和使用（二）</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-08-30 </span>
+        <div class="post-category">
+            <a href="/categories/%E9%A1%B9%E7%9B%AE%E6%80%BB%E7%BB%93/"> 项目总结 </a>
+            </div>
+          <span class="more-meta"> 约 1552 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+    <div class="post-content">
+      <h3 id="ftp关键技术三nobody进程的创建和使用二">FTP关键技术（三）：nobody进程的创建和使用（二）</h3>
+<p><strong>如何给予nobody权限</strong></p>
+<p>先看看在系统中ftp服务器是如何工作的吧</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="p">[</span><span class="n">root</span><span class="err">@</span><span class="n">VM_0_11_redhat</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">ps</span> <span class="o">-</span><span class="n">ef</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">miniftp</span>
+<span class="n">root</span>      <span class="mi">6362</span>     <span class="mi">1</span>  <span class="mi">0</span> <span class="n">May13</span> <span class="o">?</span>        <span class="mo">00</span><span class="o">:</span><span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="p">.</span><span class="o">/</span><span class="n">miniftpd</span>
+<span class="n">nobody</span>   <span class="mi">32305</span>  <span class="mi">6362</span>  <span class="mi">0</span> <span class="mi">18</span><span class="o">:</span><span class="mi">23</span> <span class="o">?</span>        <span class="mo">00</span><span class="o">:</span><span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="p">.</span><span class="o">/</span><span class="n">miniftpd</span>
+<span class="n">root</span>     <span class="mi">32306</span> <span class="mi">32305</span>  <span class="mi">0</span> <span class="mi">18</span><span class="o">:</span><span class="mi">23</span> <span class="o">?</span>        <span class="mo">00</span><span class="o">:</span><span class="mo">00</span><span class="o">:</span><span class="mo">00</span> <span class="p">.</span><span class="o">/</span><span class="n">miniftpd</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在这里，miniftpd的客户端是以root用户链接的，这显然不太合适，但是这不是重点，我们可以看到负责链接unix内核和用户环境的nobody进程，居然是以noobody权限启动的，这个权限显然不足以绑定固定端口20，所以我们需要对其提升权限。</p>
+<p>首先我们将进程的用户更改成nobody</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">if</span> <span class="p">(</span><span class="n">setegid</span><span class="p">(</span><span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_gid</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ERR_EXIT</span><span class="p">(</span><span class="s">&#34;setegid&#34;</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">seteuid</span><span class="p">(</span><span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_uid</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">ERR_EXIT</span><span class="p">(</span><span class="s">&#34;seteuid&#34;</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在capablity.h文件中定义了以下的结构体</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">__user_cap_header_struct</span> <span class="p">{</span>
+        <span class="n">__u32</span> <span class="n">version</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">pid</span><span class="p">;</span>
+<span class="p">}</span> <span class="o">*</span><span class="n">cap_user_header_t</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">__user_cap_data_struct</span> <span class="p">{</span>
+        <span class="n">__u32</span> <span class="n">effective</span><span class="p">;</span>
+        <span class="n">__u32</span> <span class="n">permitted</span><span class="p">;</span>
+        <span class="n">__u32</span> <span class="n">inheritable</span><span class="p">;</span>
+<span class="p">}</span> <span class="o">*</span><span class="n">cap_user_data_t</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>对于version我们可以看到如下描述</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">Kernels prior to 2.6.25 prefer 32-bit capabilities with version
+       _LINUX_CAPABILITY_VERSION_1.  Linux 2.6.25 added 64-bit capability
+       sets, with version _LINUX_CAPABILITY_VERSION_2.  
+</code></pre></td></tr></table>
+</div>
+</div><p>所以对于version，由于我们电脑是64位的操作系统，所以用_LINUX_CAPABILITY_VERSION_2。</p>
+<p>在man capabilities中我们找到我们需要绑定的权限</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-fallback" data-lang="fallback">CAP_NET_BIND_SERVICE
+              Bind a socket to Internet domain privileged ports (port numbers less than 1024).
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>
+<p>cap_effective:当一个进程要进行某个特权操作时,操作系统会检查cap_effective的对应位是否有效,而不再是检查进程的有效UID是否为0.</p>
+<p>例如,如果一个进程要设置系统的时钟,Linux的内核就会检查cap_effective的CAP_SYS_TIME位(第25位)是否有效.</p>
+</li>
+<li>
+<p>cap_permitted:表示进程能够使用的能力,在cap_permitted中可以包含cap_effective中没有的能力，这些能力是被进程自己临时放弃的,也可以说cap_effective是cap_permitted的一个子集.</p>
+</li>
+<li>
+<p>cap_inheritable:表示能够被当前进程执行的程序继承的能力.</p>
+</li>
+</ul>
+<p>所以我们就可以这样初始化权限</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c">    <span class="k">struct</span> <span class="n">__user_cap_header_struct</span> <span class="n">head</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">__user_cap_data_struct</span> <span class="n">data</span><span class="p">;</span>
+
+    <span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">head</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">head</span><span class="p">));</span>
+    <span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">data</span><span class="p">));</span>
+    <span class="n">head</span><span class="p">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">_LINUX_CAPABILITY_VERSION_2</span><span class="p">;</span>	 <span class="c1">// **
+</span><span class="c1"></span>    <span class="n">head</span><span class="p">.</span><span class="n">pid</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">__u32</span> <span class="n">mask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">mask</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">CAP_NET_BIND_SERVICE</span><span class="p">);</span>	<span class="c1">// **
+</span><span class="c1"></span>    <span class="n">data</span><span class="p">.</span><span class="n">effective</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">permitted</span> <span class="o">=</span> <span class="n">mask</span><span class="p">;</span>
+    <span class="n">data</span><span class="p">.</span><span class="n">inheritable</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>然后由于capset输入系统调用操作，所以我们需要用Syscall让内核来进行间接的函数调用。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">long</span> <span class="nf">syscall</span><span class="p">(</span><span class="kt">long</span> <span class="n">number</span><span class="p">,</span> <span class="p">...);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在asm/unistd.h文件中定义了一系列的宏，定义调用的具体内容</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="cp">#define __NR_capget 125
+</span><span class="cp">#define __NR_capset 126
+</span></code></pre></td></tr></table>
+</div>
+</div><p>然后我们就可以自己写一个capset函数来实现我们想要的功能</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">int</span> <span class="nf">capset</span><span class="p">(</span><span class="n">cap_user_header_t</span> <span class="n">hdrp</span><span class="p">,</span> <span class="k">const</span> <span class="n">cap_user_data_t</span> <span class="n">datap</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">syscall</span><span class="p">(</span><span class="n">__NR_capset</span><span class="p">,</span> <span class="n">hdrp</span><span class="p">,</span> <span class="n">datap</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>nobody进程负责的任务以及实现</strong></p>
+<p>在被动模式的sockfd获取函数中我们有以下步骤</p>
+<ul>
+<li>nobody进程接收PRIV_SOCK_GET_DATA_SOCK命令</li>
+<li>进一步接收一个整数，也就是port = 20；</li>
+<li>接收一个字符串，也就是ip；</li>
+<li>调用系统函数绑定20端口；</li>
+<li>回复用户进程ok</li>
+<li>发送fd</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">privop_pasv_get_data_sock</span><span class="p">(</span><span class="n">session_t</span> <span class="o">*</span><span class="n">sess</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">port</span> <span class="o">=</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)</span><span class="n">priv_sock_get_int</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">);</span>
+    <span class="kt">char</span> <span class="n">ip</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="n">priv_sock_recv_buf</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">ip</span><span class="p">));</span>
+
+    <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">addr</span><span class="p">;</span>
+    <span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">));</span>
+    <span class="n">addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="n">ip</span><span class="p">);</span>
+    <span class="n">addr</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">port</span><span class="p">);</span>
+    <span class="n">addr</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">tcp_client</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">priv_sock_send_result</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">PRIV_SOCK_RESULT_BAD</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">connect_timeout</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span> <span class="n">tunable_connect_timeout</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+        <span class="n">priv_sock_send_result</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">PRIV_SOCK_RESULT_BAD</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">priv_sock_send_result</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">PRIV_SOCK_RESULT_OK</span><span class="p">);</span>
+    <span class="n">priv_sock_send_fd</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">fd</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>获得主动模式的监听套接字</p>
+<ul>
+<li>nobody进程接收PRIV_SOCK_PASV_LISTEN命令</li>
+<li>创建任意一个端口的套接字</li>
+<li>将端口发送给客户端</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="c1">//创建一个监听套接字
+</span><span class="c1"></span><span class="k">static</span> <span class="kt">void</span> <span class="nf">privop_pasv_listen</span><span class="p">(</span><span class="n">session_t</span> <span class="o">*</span><span class="n">sess</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="n">ip</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+    <span class="n">getlocalip</span><span class="p">(</span><span class="n">ip</span><span class="p">);</span>
+
+    <span class="n">sess</span><span class="o">-&gt;</span><span class="n">pasv_listen_fd</span> <span class="o">=</span> <span class="n">tcp_server</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">addr</span><span class="p">;</span>
+    <span class="n">socklen_t</span> <span class="n">addrlen</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">addr</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">getsockname</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">pasv_listen_fd</span><span class="p">,</span> <span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">addr</span><span class="p">,</span><span class="o">&amp;</span><span class="n">addrlen</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ERR_EXIT</span><span class="p">(</span><span class="s">&#34;getsockname&#34;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">port</span> <span class="o">=</span> <span class="n">ntohs</span><span class="p">(</span><span class="n">addr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">);</span>
+    <span class="n">priv_sock_send_int</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">port</span><span class="p">);</span>
+<span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>获得主动模式的客户端连接的fd</p>
+<ul>
+<li>nobody进程接收PRIV_SOCK_PASV_ACCEPT命令</li>
+<li>关闭nobody进程的监听套接字</li>
+<li>发送用户进程ok</li>
+<li>发送用户进程客户端链接的fd</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="c1">//获取连接
+</span><span class="c1"></span><span class="k">static</span> <span class="kt">void</span> <span class="nf">privop_pasv_accept</span><span class="p">(</span><span class="n">session_t</span> <span class="o">*</span><span class="n">sess</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">accept_timeout</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">pasv_listen_fd</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">tunable_accept_timeout</span><span class="p">);</span>
+    <span class="c1">//得到一个已连接套接字
+</span><span class="c1"></span>    <span class="n">close</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">pasv_listen_fd</span><span class="p">);</span>
+    <span class="n">sess</span><span class="o">-&gt;</span><span class="n">pasv_listen_fd</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">priv_sock_send_result</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">PRIV_SOCK_RESULT_BAD</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">priv_sock_send_result</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">PRIV_SOCK_RESULT_OK</span><span class="p">);</span>
+    <span class="n">priv_sock_send_fd</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">parent_fd</span><span class="p">,</span> <span class="n">fd</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>实际上，所有的连接动作，都是ftp服务进程请求nobody进程去做的，然后nobody会将就绪的文件描述符回传给ftp服务进程。</p>
+<p>github地址:<a href="https://github.com/songwei163/miniftpd">FTP服务器项目</a></p>
+    </div>
+
+    
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF/">FTP关键技术</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E5%9B%9B%E7%A9%BA%E9%97%B2%E6%96%AD%E5%BC%80/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">FTP关键技术（四）：空闲断开</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E4%BA%8Cnobody%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E4%B8%80/">
+            <span class="next-text nav-default">FTP关键技术（二）：nobody进程的创建和使用（一）</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:songweicpp@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/songwei163" class="iconfont icon-github" title="github"></a>
+  <a href="https://songwei163.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2020
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Song Wei</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.d7b7ada643c9c1a983026e177f141f7363b4640d619caf01d8831a6718cd44ea.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>FTP关键技术（一）：账户验证 - 会飞的鱼</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="Song wei" /><meta name="description" content="" /><meta name="keywords" content="Hugo, theme, even" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.74.3 with theme even" />
+
+
+<link rel="canonical" href="https://songwei163.github.io/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E4%B8%80%E8%B4%A6%E6%88%B7%E9%AA%8C%E8%AF%81/" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+<link href="/sass/main.min.651e6917abb0239242daa570c2bec9867267bbcd83646da5a850afe573347b44.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css" integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin="anonymous">
+
+
+<meta property="og:title" content="FTP关键技术（一）：账户验证" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://songwei163.github.io/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E4%B8%80%E8%B4%A6%E6%88%B7%E9%AA%8C%E8%AF%81/" />
+<meta property="article:published_time" content="2020-08-30T14:32:05+08:00" />
+<meta property="article:modified_time" content="2020-08-30T14:32:05+08:00" />
+<meta itemprop="name" content="FTP关键技术（一）：账户验证">
+<meta itemprop="description" content="">
+<meta itemprop="datePublished" content="2020-08-30T14:32:05+08:00" />
+<meta itemprop="dateModified" content="2020-08-30T14:32:05+08:00" />
+<meta itemprop="wordCount" content="1750">
+
+
+
+<meta itemprop="keywords" content="FTP关键技术," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="FTP关键技术（一）：账户验证"/>
+<meta name="twitter:description" content=""/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">清心之处</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">清心之处</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">FTP关键技术（一）：账户验证</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2020-08-30 </span>
+        <div class="post-category">
+            <a href="/categories/%E9%A1%B9%E7%9B%AE%E6%80%BB%E7%BB%93/"> 项目总结 </a>
+            </div>
+          <span class="more-meta"> 约 1750 字 </span>
+          <span class="more-meta"> 预计阅读 4 分钟 </span>
+        
+      </div>
+    </header>
+
+    
+    <div class="post-content">
+      <h3 id="ftp关键技术一账户验证">FTP关键技术（一）：账户验证</h3>
+<p>对于Linux服务端的FTP服务而言，账户为Linux主机的用户。</p>
+<p>一般步骤是：</p>
+<ul>
+<li>以root用户权限启动FTP服务</li>
+<li>获取客户端的验证信息</li>
+<li>从系统获取用户名对应的加密后的密码</li>
+<li>与客户端发来的密码进行对应加密，并对比</li>
+</ul>
+<p><strong>如何验证是否以root用户启动服务？</strong></p>
+<p>我们可以通过getuid函数获取当前程序运行的uid，一般root用户的uid为0，所以可以通过下面的方式验证是否以root用户启动：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">if</span> <span class="p">(</span><span class="n">getuid</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">perror</span><span class="p">(</span><span class="s">&#34;miniftpd must be start as root.</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+    <span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>从系统获取用户名对应的加密后的密码</strong></p>
+<p>UNIX 系统口令文件定义包含在&lt;pwd.h&gt;中定义的passwd结构体中。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">passwd</span> <span class="p">{</span>
+    <span class="kt">char</span>   <span class="o">*</span><span class="n">pw_name</span><span class="p">;</span>       <span class="cm">/* username */</span>
+    <span class="kt">char</span>   <span class="o">*</span><span class="n">pw_passwd</span><span class="p">;</span>     <span class="cm">/* user password */</span>
+    <span class="n">uid_t</span>   <span class="n">pw_uid</span><span class="p">;</span>        <span class="cm">/* user ID */</span>
+    <span class="n">gid_t</span>   <span class="n">pw_gid</span><span class="p">;</span>        <span class="cm">/* group ID */</span>
+    <span class="kt">char</span>   <span class="o">*</span><span class="n">pw_gecos</span><span class="p">;</span>      <span class="cm">/* user information */</span>
+    <span class="kt">char</span>   <span class="o">*</span><span class="n">pw_dir</span><span class="p">;</span>        <span class="cm">/* home directory */</span>
+    <span class="kt">char</span>   <span class="o">*</span><span class="n">pw_shell</span><span class="p">;</span>      <span class="cm">/* shell program */</span>
+<span class="p">};</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在这里就不在赘述其他东西，主要关心uid和pw_passwd，分别是用户id和用户所对应的密码。于此同时在其中定义了两个函数需要我们去关注。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="c1">//通过用户名获取passwd
+</span><span class="c1"></span><span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="nf">getpwnam</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+<span class="c1">//通过uid获取passwd
+</span><span class="c1"></span><span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="nf">getpwuid</span><span class="p">(</span><span class="n">uid_t</span> <span class="n">uid</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>除此之外需要我们注意的是这些函数需要运行在root权限下，这就是为什么要验证是否root启动服务原因之一。另外如果输入的用户名或者uid是错误的话，返回的passwd是一个NULL，于是我们便可以这样设计ftp的验证。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">do_user</span><span class="p">(</span><span class="n">session_t</span> <span class="o">*</span><span class="n">sess</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">//略去了接受和分割命令细节，这里sess-&gt;arg是用户名
+</span><span class="c1"></span>    <span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="n">pw</span>  <span class="o">=</span> <span class="n">getpwnam</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">arg</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">pw</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ftp_reply</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">FTP_LOGINERR</span><span class="p">,</span> <span class="s">&#34;Login incorrect&#34;</span><span class="p">);</span>
+        <span class="c1">//发送FTP_LOGINERR命令
+</span><span class="c1"></span>        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">sess</span><span class="o">-&gt;</span><span class="n">uid</span> <span class="o">=</span> <span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_uid</span><span class="p">;</span>
+    <span class="n">ftp_reply</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">FTP_GIVEPWORD</span><span class="p">,</span> <span class="s">&#34;Please specify the password.&#34;</span><span class="p">);</span>  
+    <span class="c1">//发送FTP_GIVEPWORD命令
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>在这里将username和passwd分开验证可以优化一下体验，至少知道是什么输错了，由于是分开设计的，所以我们需要保存一个用户信息，因为uid是最好操作的，所以我们在sess（用户信息）中存储了一个uid。</p>
+<p><strong>对客户端发过来的密码进行对应的加密，并对比</strong></p>
+<p>这里可能有读者会问，为什么要将客户端的密码进行加密对比，而不是将系统的密码解密对比呢？为了安全考虑，Linux的加密口令是经单向加密算法处理过的用户口令副本。因此此算法是单向的，所以不能从加密猜测到原来的口令。基于此linux设计了一个叫阴影口令的文件。该文件至少包含用户名和加密口令，与该口令相关的其他信息也存放其中。</p>
+<p>在&lt;shadow.h&gt;文件中定义了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">spwd</span> <span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">sp_namp</span><span class="p">;</span>     <span class="cm">/* Login name */</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">sp_pwdp</span><span class="p">;</span>     <span class="cm">/* Encrypted password */</span>
+    <span class="kt">long</span>  <span class="n">sp_lstchg</span><span class="p">;</span>   <span class="cm">/* Date of last change
+</span><span class="cm">                                     (measured in days since
+</span><span class="cm">                                     1970-01-01 00:00:00 +0000 (UTC)) */</span>
+    <span class="kt">long</span>  <span class="n">sp_min</span><span class="p">;</span>      <span class="cm">/* Min # of days between changes */</span>
+    <span class="kt">long</span>  <span class="n">sp_max</span><span class="p">;</span>      <span class="cm">/* Max # of days between changes */</span>
+    <span class="kt">long</span>  <span class="n">sp_warn</span><span class="p">;</span>     <span class="cm">/* # of days before password expires
+</span><span class="cm">                                     to warn user to change it */</span>
+    <span class="kt">long</span>  <span class="n">sp_inact</span><span class="p">;</span>    <span class="cm">/* # of days after password expires
+</span><span class="cm">                                     until account is disabled */</span>
+    <span class="kt">long</span>  <span class="n">sp_expire</span><span class="p">;</span>   <span class="cm">/* Date when account expires
+</span><span class="cm">                                     (measured in days since
+</span><span class="cm">                                     1970-01-01 00:00:00 +0000 (UTC)) */</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">sp_flag</span><span class="p">;</span>  <span class="cm">/* Reserved */</span>
+<span class="p">};</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>在这个文件中，我们主要用到sp_pwdp这个字段，sp_pwdp是指加密口令，通过这个加密口令我们可以通过crypt函数对获取客户端发送的密码进行加密。</p>
+<p>同样定义了函数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">struct</span> <span class="n">spwd</span> <span class="o">*</span><span class="nf">getspnam</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当我们获得了spwd的后，我们还需要对客户端发送的pwsswd进行加密</p>
+<p>在&lt;unistd.h&gt;中定义了一个函数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">char</span> <span class="o">*</span><span class="nf">crypt</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">salt</span><span class="p">);</span>
+<span class="cm">/*
+</span><span class="cm">key：要加密的明文。
+</span><span class="cm">
+</span><span class="cm">salt：密钥。
+</span><span class="cm">
+</span><span class="cm">salt 默认使用DES加密方法。DES加密时，salt只能取两个字符，多出的字符会被丢弃。
+</span><span class="cm">
+</span><span class="cm">需要注意的是这个函数在编译的时候需要链接lcrypt。
+</span><span class="cm">*/</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>于是我们便可以这样写do_pass函数来验证客户端的密码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-c" data-lang="c"><span class="k">static</span> <span class="kt">void</span> <span class="nf">do_pass</span><span class="p">(</span><span class="n">session_t</span> <span class="o">*</span><span class="n">sess</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">passwd</span> <span class="o">*</span><span class="n">pw</span> <span class="o">=</span> <span class="n">getpwuid</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">uid</span><span class="p">);</span>   <span class="c1">//获取pw_name
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">pw</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ftp_reply</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">FTP_LOGINERR</span><span class="p">,</span> <span class="s">&#34;Login incorrect&#34;</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">struct</span> <span class="n">spwd</span> <span class="o">*</span><span class="n">sp</span> <span class="o">=</span> <span class="n">getspnam</span><span class="p">(</span><span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_name</span><span class="p">);</span>  <span class="c1">//获取sp_pwdp
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">sp</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ftp_reply</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">FTP_LOGINERR</span><span class="p">,</span> <span class="s">&#34;Login incorrect&#34;</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">encrypted_pw</span> <span class="o">=</span> <span class="n">crypt</span><span class="p">(</span><span class="n">sess</span><span class="o">-&gt;</span><span class="n">arg</span><span class="p">,</span> <span class="n">sp</span><span class="o">-&gt;</span><span class="n">sp_pwdp</span><span class="p">);</span>   <span class="c1">//加密
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">encrypted_pw</span><span class="p">,</span> <span class="n">sp</span><span class="o">-&gt;</span><span class="n">sp_pwdp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>    <span class="c1">//比对加密后的密码和sp_pwdp
+</span><span class="c1"></span>    <span class="p">{</span>
+        <span class="n">ftp_reply</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">FTP_LOGINERR</span><span class="p">,</span> <span class="s">&#34;Login incorrect.&#34;</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+   
+    <span class="n">setegid</span><span class="p">(</span><span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_gid</span><span class="p">);</span>                      <span class="c1">//更改gid
+</span><span class="c1"></span>    <span class="n">seteuid</span><span class="p">(</span><span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_uid</span><span class="p">);</span>                      <span class="c1">//更改uid
+</span><span class="c1"></span>    <span class="n">chdir</span><span class="p">(</span><span class="n">pw</span><span class="o">-&gt;</span><span class="n">pw_dir</span><span class="p">);</span>                        <span class="c1">//更改Dir
+</span><span class="c1"></span>    <span class="n">ftp_reply</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">FTP_LOGINOK</span><span class="p">,</span> <span class="s">&#34;Login success.&#34;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>通过客户端传来的用户名，验证是否存在，拿到uid，并由session持有，别的接口使用时，通过session中保存的uid可以拿到struct passwd结构，然后可以拿到struct spwd结构，从而获取加密口令，并对客户端传来的密码进行加密，比对加密口令，验证是否登录成功。在这里需要强调一下，系统中已经存在的用户密码单向加密的结果的前几位可以作为对将要进行单向加密并比对的明文密码的salt。</p>
+<p>github地址:<a href="https://github.com/songwei163/miniftpd">FTP服务器项目</a></p>
+    </div>
+
+    
+<footer class="post-footer">
+      <div class="post-tags">
+          <a href="/tags/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF/">FTP关键技术</a>
+          </div>
+      <nav class="post-nav">
+        <a class="prev" href="/post/ftp%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E4%BA%8Cnobody%E8%BF%9B%E7%A8%8B%E7%9A%84%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8%E4%B8%80/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">FTP关键技术（二）：nobody进程的创建和使用（一）</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        <a class="next" href="/post/30-%E8%BF%9E%E7%BB%AD%E5%AD%90%E6%95%B0%E7%BB%84%E7%9A%84%E6%9C%80%E5%A4%A7%E5%92%8C/">
+            <span class="next-text nav-default">30 连续子数组的最大和</span>
+            <span class="next-text nav-mobile">下一篇</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:songweicpp@163.com" class="iconfont icon-email" title="email"></a>
+      <a href="https://github.com/songwei163" class="iconfont icon-github" title="github"></a>
+  <a href="https://songwei163.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://gohugo.io">Hugo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2017 - 
+    2020
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Song Wei</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js" integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js" integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin="anonymous"></script>
+
+
+
+<script type="text/javascript" src="/js/main.min.d7b7ada643c9c1a983026e177f141f7363b4640d619caf01d8831a6718cd44ea.js"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
